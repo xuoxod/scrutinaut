@@ -1,0 +1,33 @@
+# Scrutinaut: Java + Rust + Scripts
+
+# Java
+java_frontend/target/
+java_frontend/.idea/
+java_frontend/.classpath
+java_frontend/.project
+java_frontend/.settings/
+*.class
+*.log
+
+# Rust
+rust_backend/target/
+rust_backend/.cargo/
+rust_backend/Cargo.lock
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scripts
+scripts/*.log
+scripts/helpers/*.log
+scripts/utils/*.log
+
+# General
+*.swp
+*.swo
+*~

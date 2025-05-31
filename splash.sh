@@ -19,6 +19,16 @@ for line in $(eval $banner_cmd); do
 done
 unset IFS
 
+# --- Project Info Section ---
+echo -e "\n\033[1;34m🛰️  Project:\033[0m      Scrutinaut"
+echo -e "\033[1;34m👨‍💻 Author:\033[0m       emhcet & contributors"
+echo -e "\033[1;34m🦀 Backend:\033[0m      Rust"
+echo -e "\033[1;34m☕ Frontend:\033[0m     Java"
+echo -e "\033[1;34m🧪 Paradigm:\033[0m     TDD-first"
+echo -e "\033[1;34m📦 Setup:\033[0m        ./setup.sh"
+echo -e "\033[1;34m📖 Docs:\033[0m         README.md"
+echo -e "\033[1;34m🌐 Repo:\033[0m         https://github.com/your-org/scrutinaut\n"
+
 # --- Animated Spinner with Colorful Status ---
 messages=("Booting up" "Checking systems" "Loading modules" "Preparing TDD" "Ready for launch!")
 spinner=( '⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏' )
@@ -29,6 +39,18 @@ for i in {0..39}; do
     printf "\r\033[1;${color}m%s\033[0m %s" "$msg..." "$spin"
     sleep 0.08
 done
+echo
+
+# --- System Environment Summary ---
+echo -e "\033[1;36m🔎 Environment Check:\033[0m"
+java_ver=$(java -version 2>&1 | head -n 1 | grep -oP '\d+\.\d+')
+rust_ver=$(rustc --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+')
+mvn_ver=$(mvn -version 2>/dev/null | head -n 1 | grep -oP '\d+\.\d+\.\d+')
+echo -e "  ☕ Java:    ${java_ver:-Not found}"
+echo -e "  🦀 Rust:    ${rust_ver:-Not found}"
+echo -e "  🛠️  Maven:   ${mvn_ver:-Not found}"
+echo -e "  💻 VS Code: $(command -v code &>/dev/null && echo 'Found' || echo 'Not found')"
+echo -e "  📦 tree:    $(command -v tree &>/dev/null && echo 'Found' || echo 'Not found')"
 echo
 
 # --- Countdown with Progress Bar ---
@@ -46,9 +68,21 @@ frames=(
 "  ( •_•)>⌐■-■ "
 "  (⌐■_■)   "
 "  (⌐■_■)  🛰️"
+"  (⌐■_■)  🚀"
+"  (⌐■_■)  🌐"
 )
 for frame in "${frames[@]}"; do
     printf "\r\033[1;35m%s\033[0m" "$frame"
     sleep 0.5
 done
-echo -e "\n\033[1;36mScrutinaut is ready to interrogate the web!\033[0m"
+echo -e "\n\033[1;36mScrutinaut is ready to interrogate the web!\033[0m\n"
+
+# --- Inspirational Quote ---
+quotes=(
+    "“The web is vast and infinite.” — Ghost in the Shell"
+    "“Exploration knows no bounds.”"
+    "“Automate all the things!”"
+    "“May your packets always return.”"
+)
+quote="${quotes[$RANDOM % ${#quotes[@]}]}"
+echo -e "\033[1;33m💡 $quote\033[0m"

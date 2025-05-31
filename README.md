@@ -25,7 +25,7 @@ It’s designed for lazy, modern developers who want to get straight to coding, 
 ## 🛠️ Quickstart
 
 ```sh
-git clone <your-repo-url> scrutinaut
+git clone https://github.com/xuoxod/scrutinaut.git
 cd scrutinaut
 ./setup.sh
 ```

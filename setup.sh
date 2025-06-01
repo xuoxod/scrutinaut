@@ -99,7 +99,6 @@ ensure_dirs() {
     done
 }
 
-
 write_java_pom() {
     cat > "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/pom.xml" <<EOF
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -113,6 +112,7 @@ write_java_pom() {
         <maven.compiler.source>${JAVA_VERSION}</maven.compiler.source>
         <maven.compiler.target>${JAVA_VERSION}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mainClass>${JAVA_GROUP_ID}.${JAVA_CORE_PACKAGE}.Main</mainClass>
     </properties>
     <dependencies>
         <dependency>
@@ -137,15 +137,42 @@ write_java_pom() {
                 <version>3.8.0</version>
             </plugin>
             <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>\${mainClass}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>\${mainClass}</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.1.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
                 <version>3.0.2</version>
             </plugin>
             <plugin>
@@ -168,8 +195,8 @@ write_java_pom() {
     </build>
 </project>
 EOF
-    log_info "Generated pom.xml with JUnit 5 (Jupiter) and all plugins."
-} 
+    log_info "Generated robust pom.xml with JUnit 5, CLI main class, and all best-practice plugins."
+}
 
 write_java_scaffold() {
     local base_dir="${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/src"

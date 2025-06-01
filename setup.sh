@@ -10,9 +10,13 @@ export UTILS_DIR_NAME="utils"
 export LOGS_DIR_NAME="logs"
 
 export JAVA_FRONTEND_DIR_NAME="java_frontend"
-export JAVA_GROUP_ID="com.scrutinaut"
-export JAVA_ARTIFACT_ID="scrutinaut-app"
+
+# Set your desired Java package root here:
+export JAVA_GROUP_ID="com.gmail.xuoxod.scrutinaut"
 export JAVA_MAIN_CLASS_NAME_BASE="ScrutinautApp"
+export JAVA_CORE_PACKAGE="core"
+
+export JAVA_ARTIFACT_ID="scrutinaut-app"
 export JAVA_VERSION="23"
 export MAVEN_ARCHETYPE_VERSION="1.4"
 
@@ -95,6 +99,7 @@ ensure_dirs() {
     done
 }
 
+
 write_java_pom() {
     cat > "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/pom.xml" <<EOF
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -127,11 +132,167 @@ write_java_pom() {
                     <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.7.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
         </plugins>
     </build>
 </project>
 EOF
-    log_info "Generated pom.xml with JUnit 5 (Jupiter) support."
+    log_info "Generated pom.xml with JUnit 5 (Jupiter) and all plugins."
+} 
+
+write_java_scaffold() {
+    local base_dir="${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/src"
+    local pkg_path_main="${base_dir}/main/java/$(echo "${JAVA_GROUP_ID}.${JAVA_CORE_PACKAGE}" | tr '.' '/')"
+    local pkg_path_test="${base_dir}/test/java/$(echo "${JAVA_GROUP_ID}.${JAVA_CORE_PACKAGE}" | tr '.' '/')"
+    mkdir -p "$pkg_path_main" "$pkg_path_test"
+
+    # Main class
+    cat > "${pkg_path_main}/${JAVA_MAIN_CLASS_NAME_BASE}.java" <<EOF
+package ${JAVA_GROUP_ID}.${JAVA_CORE_PACKAGE};
+
+public class ${JAVA_MAIN_CLASS_NAME_BASE} {
+    public static void main(String[] args) {
+        System.out.println("Hello from ${JAVA_MAIN_CLASS_NAME_BASE}!");
+    }
+}
+EOF
+
+    # Example utility class
+    cat > "${pkg_path_main}/UrlInterrogator.java" <<EOF
+package ${JAVA_GROUP_ID}.${JAVA_CORE_PACKAGE};
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class UrlInterrogator {
+    public int getStatusCode(String urlStr) {
+        try {
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            return conn.getResponseCode();
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+}
+EOF
+
+    # Test class for main class
+    cat > "${pkg_path_test}/${JAVA_MAIN_CLASS_NAME_BASE}Test.java" <<EOF
+package ${JAVA_GROUP_ID}.${JAVA_CORE_PACKAGE};
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class ${JAVA_MAIN_CLASS_NAME_BASE}Test {
+    @Test
+    void testMain() {
+        assertTrue(true);
+    }
+}
+EOF
+
+    # Test class for utility
+    cat > "${pkg_path_test}/UrlInterrogatorTest.java" <<EOF
+package ${JAVA_GROUP_ID}.${JAVA_CORE_PACKAGE};
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class UrlInterrogatorTest {
+    @Test
+    void testStatusCode200() {
+        UrlInterrogator interrogator = new UrlInterrogator();
+        int status = interrogator.getStatusCode("https://httpbin.org/status/200");
+        assertEquals(200, status);
+    }
+}
+EOF
+
+    log_info "Java classes and tests scaffolded in package ${JAVA_GROUP_ID}.${JAVA_CORE_PACKAGE}"
+}
+
+write_rust_scaffold() {
+    local rust_dir="${PROJECT_ROOT_DIR}/${RUST_BACKEND_DIR_NAME}"
+    local core_dir="${rust_dir}/src/core"
+    mkdir -p "$core_dir"
+
+    # lib.rs
+    cat > "${rust_dir}/src/lib.rs" <<EOF
+pub mod core;
+EOF
+
+    # core/mod.rs
+    cat > "${core_dir}/mod.rs" <<EOF
+pub mod url_interrogator;
+EOF
+
+    # core/url_interrogator.rs
+    cat > "${core_dir}/url_interrogator.rs" <<EOF
+use reqwest::blocking::get;
+
+pub fn get_status_code(url: &str) -> Result<u16, reqwest::Error> {
+    let resp = get(url)?;
+    Ok(resp.status().as_u16())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_status_code_200() {
+        let code = get_status_code("https://httpbin.org/status/200").unwrap();
+        assert_eq!(code, 200);
+    }
+}
+EOF
+
+    # Cargo.toml (if not exists)
+    if [ ! -f "${rust_dir}/Cargo.toml" ]; then
+        cat > "${rust_dir}/Cargo.toml" <<EOF
+[package]
+name = "scrutinaut_native"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.12", features = ["blocking"] }
+EOF
+    fi
+
+    log_info "Rust core module and test scaffolded in src/core/url_interrogator.rs"
 }
 
 write_script() {
@@ -281,7 +442,9 @@ main() {
     branch_safety
     ensure_dirs
     write_java_pom
-  
+    write_java_scaffold
+    write_rust_scaffold
+
     log_info "Java pom.xml created at ${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/pom.xml"
 
     write_system_check

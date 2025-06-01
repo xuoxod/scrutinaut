@@ -386,6 +386,22 @@ write_helpers() {
     :
 }
 
+write_inspect_scrutinaut() {
+    write_script "${PROJECT_ROOT_DIR}/${SCRIPTS_DIR_NAME}/inspect-scrutinaut.sh" \
+'#!/bin/bash
+set -euo pipefail
+
+# Auto-detect project root as the parent of the script'\''s directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+echo "Project root: ${PROJECT_ROOT_DIR}"
+echo "Java frontend: java_frontend"
+echo "Rust backend: rust_backend"
+tree -L 3 "${PROJECT_ROOT_DIR}" || ls -l "${PROJECT_ROOT_DIR}"
+'
+}
+
 prompt_delete_dir() {
     local dir="$1"
     if [ -d "$dir" ]; then

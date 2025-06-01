@@ -95,6 +95,45 @@ ensure_dirs() {
     done
 }
 
+write_java_pom() {
+    cat > "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/pom.xml" <<EOF
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>${JAVA_GROUP_ID}</groupId>
+    <artifactId>${JAVA_ARTIFACT_ID}</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <properties>
+        <maven.compiler.source>${JAVA_VERSION}</maven.compiler.source>
+        <maven.compiler.target>${JAVA_VERSION}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+EOF
+    log_info "Generated pom.xml with JUnit 5 (Jupiter) support."
+}
+
 write_script() {
     local script_path="$1"
     local content="$2"
@@ -241,6 +280,10 @@ main() {
 
     branch_safety
     ensure_dirs
+    write_java_pom
+  
+    log_info "Java pom.xml created at ${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/pom.xml"
+
     write_system_check
     write_error_logger
     write_platform_check

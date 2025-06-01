@@ -1,4 +1,41 @@
 #!/bin/bash
+# filepath: splash.sh
+
+show_banner_and_info() {
+    if command -v toilet &>/dev/null; then
+        banner_cmd="toilet -f pagga --metal 'Scrutinaut'"
+    elif command -v figlet &>/dev/null; then
+        banner_cmd="figlet -c 'Scrutinaut'"
+    else
+        banner_cmd="echo '*** Scrutinaut ***'"
+    fi
+
+    IFS=$'\n'
+    for line in $(eval $banner_cmd); do
+        for ((i=1; i<=${#line}; i++)); do
+            printf "\r\033[1;36m%s\033[0m" "${line:0:i}"
+            sleep 0.01
+        done
+        echo
+    done
+    unset IFS
+
+    echo -e "\n\033[1;34m🛰️  Project:\033[0m      Scrutinaut"
+    echo -e "\033[1;34m👨‍💻 Author:\033[0m       emhcet & contributors"
+    echo -e "\033[1;34m🦀 Backend:\033[0m      Rust"
+    echo -e "\033[1;34m☕ Frontend:\033[0m     Java"
+    echo -e "\033[1;34m🧪 Paradigm:\033[0m     TDD-first"
+    echo -e "\033[1;34m📦 Setup:\033[0m        ./setup.sh"
+    echo -e "\033[1;34m📖 Docs:\033[0m         README.md"
+    echo -e "\033[1;34m🌐 Repo:\033[0m         https://github.com/your-org/scrutinaut\n"
+}
+
+if [[ "${1:-}" == "--banner" ]]; then
+    show_banner_and_info
+    exit 0
+fi
+
+show_banner_and_info
 
 # --- Animated ASCII Banner ---
 if command -v toilet &>/dev/null; then

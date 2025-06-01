@@ -28,7 +28,17 @@ It’s designed for lazy, modern developers who want to get straight to coding, 
 git clone https://github.com/xuoxod/scrutinaut.git
 cd scrutinaut
 ./setup.sh
+
+
+## 🌱 Branching
+
+For experimental or enhanced setup and automation, use the branch:
+
+```sh
+git checkout -b neonaut
 ```
+
+This branch is dedicated to advanced setup, automation, and CLI experience improvements.
 
 ---
 

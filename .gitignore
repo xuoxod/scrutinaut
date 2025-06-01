@@ -30,4 +30,4 @@ scripts/utils/*.log
 # General
 *.swp
 *.swo
-*~
+*~logs/

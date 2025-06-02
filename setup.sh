@@ -78,8 +78,12 @@ main() {
     write_platform_check
     write_helpers
     ensure_gitignore
+
     prompt_delete_dir "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}"
     prompt_delete_dir "${PROJECT_ROOT_DIR}/${RUST_BACKEND_DIR_NAME}"
+
+    write_java_pom
+    
     self_test
 
     echo -e "${GREEN}Setup completed successfully!${NC}"

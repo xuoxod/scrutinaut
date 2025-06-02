@@ -22,11 +22,11 @@ MAG3='\033[1;37m'
 # Yellow for highlights
 YELLOW='\033[1;33m'
 
-PINK1='\033[1;35m'   # Bright Magenta (Hot Pink)
-PINK2='\033[38;5;198m'  # Hot Pink (ANSI 256-color)
-PINK3='\033[38;5;213m'  # Light Pink (ANSI 256-color)
-PINK4='\033[38;5;201m'  # Deep Pink (ANSI 256-color)
-PINK5='\033[38;5;218m'  # Pale Pink (ANSI 256-color)
+PINK1='\033[1;35m'
+PINK2='\033[38;5;198m'
+PINK3='\033[38;5;213m'
+PINK4='\033[38;5;201m'
+PINK5='\033[38;5;218m'
 
 # Uniformed gradient tree printer
 print_animated_tree_gradient() {

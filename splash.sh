@@ -21,11 +21,12 @@ show_banner_and_info() {
     unset IFS
 
     echo -e "\n\033[1;34m🛰️  Project:\033[0m      Scrutinaut"
-    echo -e "\033[1;34m👨‍💻 Author:\033[0m       emhcet & contributors"
+    echo -e "\033[1;34m👨‍💻 Author:\033[0m     emhcet & contributors"
     echo -e "\033[1;34m🦀 Backend:\033[0m      Rust"
     echo -e "\033[1;34m☕ Frontend:\033[0m     Java"
     echo -e "\033[1;34m🧪 Paradigm:\033[0m     TDD-first"
     echo -e "\033[1;34m📦 Setup:\033[0m        ./setup.sh"
+    echo -e "\033[1;34m🔄 Upgrade:\033[0m      ./upgrade-java-pom.sh"
     echo -e "\033[1;34m📖 Docs:\033[0m         README.md"
     echo -e "\033[1;34m🌐 Repo:\033[0m         https://github.com/your-org/scrutinaut\n"
 }
@@ -55,6 +56,8 @@ show_full_splash() {
     echo -e "  🛠️  Maven:   ${mvn_ver:-Not found}"
     echo -e "  💻 VS Code: $(command -v code &>/dev/null && echo 'Found' || echo 'Not found')"
     echo -e "  📦 tree:    $(command -v tree &>/dev/null && echo 'Found' || echo 'Not found')"
+    echo -e "  📝 custom-pom.xml: $( [[ -f custom-pom.xml ]] && echo 'Found' || echo 'Not found' )"
+    echo -e "  🔄 upgrade-java-pom.sh: $( [[ -f upgrade-java-pom.sh ]] && echo 'Found' || echo 'Not found' )"
     echo
 
     # --- Countdown with Progress Bar ---
@@ -87,6 +90,8 @@ show_full_splash() {
         "“Exploration knows no bounds.”"
         "“Automate all the things!”"
         "“May your packets always return.”"
+        "“Atomic upgrades, atomic happiness.”"
+        "“Upgrade early, upgrade often.”"
     )
     quote="${quotes[$RANDOM % ${#quotes[@]}]}"
     echo -e "\033[1;33m💡 $quote\033[0m"

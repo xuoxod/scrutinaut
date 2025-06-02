@@ -22,6 +22,12 @@ MAG3='\033[1;37m'
 # Yellow for highlights
 YELLOW='\033[1;33m'
 
+PINK1='\033[1;35m'   # Bright Magenta (Hot Pink)
+PINK2='\033[38;5;198m'  # Hot Pink (ANSI 256-color)
+PINK3='\033[38;5;213m'  # Light Pink (ANSI 256-color)
+PINK4='\033[38;5;201m'  # Deep Pink (ANSI 256-color)
+PINK5='\033[38;5;218m'  # Pale Pink (ANSI 256-color)
+
 # Uniformed gradient tree printer
 print_animated_tree_gradient() {
     local lines=("$@")
@@ -82,9 +88,9 @@ print_animated_tree_gradient JAVA_COLORS \
     "                                ├── ScrutinautAppTest.java" \
     "                                └── UrlInterrogatorTest.java"
 
-# Red gradient for Rust
-RUST_COLORS=("$RED1" "$RED2" "$RED3")
-echo -e "\n${RED1}Would scaffold Rust backend in:${NC}"
+# Pink gradient for Rust
+RUST_COLORS=("$PINK1" "$PINK2" "$PINK3", "$PINK4", "$PINK5")
+echo -e "\n${PINK5}Would scaffold Rust backend in:${NC}"
 print_animated_tree_gradient RUST_COLORS \
     "rust_backend/" \
     "├── Cargo.toml" \

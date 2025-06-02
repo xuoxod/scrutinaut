@@ -173,17 +173,6 @@ write_java_scaffold() {
     fi
 }
 
-write_java_pom() {
-    local pom="${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/pom.xml"
-    cat > "$pom" <<'EOF'
-<!-- Your custom pom.xml content here -->
-<project>
-  <!-- ... -->
-</project>
-EOF
-    echo -e "${GREEN}Custom pom.xml written.${NC}"
-}
-
 self_test() {
     echo -e "${CYAN}Running post-setup self-test...${NC}"
     local java_ok=0 rust_ok=0
@@ -231,7 +220,6 @@ main() {
 
     prompt_delete_dir "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}"
     write_java_scaffold
-    write_java_pom
 
     prompt_delete_dir "${PROJECT_ROOT_DIR}/${RUST_BACKEND_DIR_NAME}"
 
@@ -245,5 +233,11 @@ main() {
     echo -e "  4. Inspect: ${YELLOW}./scripts/inspect-scrutinaut.sh${NC}"
     echo -e "  5. Enjoy Scrutinaut! 🚀"
 }
+
+if [[ -f "${PROJECT_ROOT_DIR}/upgrade-java-pom.sh" ]]; then
+    bash "${PROJECT_ROOT_DIR}/upgrade-java-pom.sh"
+else
+    echo -e "${YELLOW}No upgrade script found. Skipping Java pom upgrade.${NC}"
+fi
 
 main "$@"

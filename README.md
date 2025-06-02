@@ -15,6 +15,7 @@ It’s designed for lazy, modern developers who want to get straight to coding, 
 ## 🚀 Features
 
 - **One-command setup:** `./setup.sh` builds everything for you.
+- **Atomic upgrades:** `./upgrade-java-pom.sh` upgrades your Java build and tests in one go.
 - **Java + Rust:** Best of both worlds, wired up with JNI.
 - **TDD by default:** Test scaffolding included.
 - **Pretty, nerdy CLI output:** Color, tables, and more.
@@ -28,7 +29,10 @@ It’s designed for lazy, modern developers who want to get straight to coding, 
 git clone https://github.com/xuoxod/scrutinaut.git
 cd scrutinaut
 ./setup.sh
+./upgrade-java-pom.sh   # <--- Upgrade Java build and tests after setup
+```
 
+---
 
 ## 🌱 Branching
 
@@ -57,11 +61,40 @@ Run a full system check anytime:
 
 ---
 
+## 📦 Upgrade Workflow
+
+Scrutinaut uses the **one job principle** for atomic, robust upgrades:
+
+- **Project scaffolding:**  
+  Run `./setup.sh` to generate all directories, scripts, and default code.
+- **Java build & test upgrade:**  
+  Run `./upgrade-java-pom.sh` to:
+  - Overwrite `java_frontend/pom.xml` with your custom Maven build (latest JUnit, fat jar support, etc.)
+  - Overwrite `ScrutinautAppTest.java` and other test files with versions compatible with your upgraded dependencies
+  - Optionally upgrade other Java files as needed
+  - Back up originals before overwriting
+  - Show a colorized diff (if `colordiff` is available)
+  - Validate the new pom.xml as XML (if `xmllint` is available)
+
+**Custom upgrade assets:**  
+Place your custom files in the project root:
+
+- `custom-pom.xml`
+- `custom-ScrutinautAppTest.java`
+- `custom-UrlInterrogatorTest.java`
+- (add more as needed)
+
+---
+
 ## 📂 Project Structure
 
 ```plaintext
 scrutinaut/
   ├── setup.sh
+  ├── upgrade-java-pom.sh
+  ├── custom-pom.xml
+  ├── custom-ScrutinautAppTest.java
+  ├── custom-UrlInterrogatorTest.java
   ├── README.md
   ├── .gitignore
   ├── scripts/
@@ -82,6 +115,7 @@ scrutinaut/
 
 - **Automate everything:** Developers should focus on logic, not boilerplate.
 - **Transparency:** All setup steps and checks are visible and color-coded.
+- **Atomic upgrades:** Each script does one job, and does it well.
 - **Nerdy by design:** ASCII banners, color output, and a technical, fun vibe.
 
 ---

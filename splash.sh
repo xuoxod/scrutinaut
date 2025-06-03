@@ -28,7 +28,7 @@ show_banner_and_info() {
     echo -e "\033[1;34m📦 Setup:\033[0m        ./setup.sh"
     echo -e "\033[1;34m🔄 Upgrade:\033[0m      ./upgrade-java-pom.sh"
     echo -e "\033[1;34m📖 Docs:\033[0m         README.md"
-    echo -e "\033[1;34m🌐 Repo:\033[0m         https://github.com/your-org/scrutinaut\n"
+    echo -e "\033[1;34m🌐 Repo:\033[0m         https://github.com/xuoxod/scrutinaut\n"
 }
 
 show_full_splash() {

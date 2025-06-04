@@ -5,15 +5,16 @@ set -euo pipefail
 
 PROJECT_ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JAVA_FRONTEND_DIR_NAME="java_frontend"
-SRC_TEST_PATH="${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/src/test/java/com/gmail/xuoxod/scrutinaut"
+SRC_TEST_ROOT="${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/src/test/java"
 CUSTOM_POM_PATH="${PROJECT_ROOT_DIR}/custom-pom.xml"
-CUSTOM_APPTEST_PATH="${PROJECT_ROOT_DIR}/custom-ScrutinautAppTest.java"
-CUSTOM_URLTEST_PATH="${PROJECT_ROOT_DIR}/custom-UrlInterrogatorTest.java"
+
+# List of custom test files (add more as needed)
+CUSTOM_TEST_FILES=(
+    "custom-ScrutinautAppTest.java"
+    "custom-UrlInterrogatorTest.java"
+)
 
 TARGET_POM_PATH="${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/pom.xml"
-TARGET_APPTEST_PATH="${SRC_TEST_PATH}/ScrutinautAppTest.java"
-TARGET_URLTEST_PATH="${SRC_TEST_PATH}/UrlInterrogatorTest.java"
-
 timestamp=$(date +%Y%m%d%H%M%S)
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -39,35 +40,60 @@ fi
 cp "$CUSTOM_POM_PATH" "$TARGET_POM_PATH"
 echo -e "${GREEN}pom.xml upgraded.${NC}"
 
-# --- Ensure test directory exists before copying test files ---
-mkdir -p "$SRC_TEST_PATH"
-
-# --- Upgrade ScrutinautAppTest.java ---
-if [[ -f "$CUSTOM_APPTEST_PATH" ]]; then
-    if [[ -f "$TARGET_APPTEST_PATH" ]]; then
-        cp "$TARGET_APPTEST_PATH" "${TARGET_APPTEST_PATH}.bak.$timestamp"
-        echo -e "${YELLOW}Backed up ScrutinautAppTest.java to ${TARGET_APPTEST_PATH}.bak.$timestamp${NC}"
+# --- Rename App.java to ScrutinautApp.java and update class name if needed ---
+MAIN_SRC_DIR="${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/src/main/java"
+APP_JAVA_PATH=$(find "$MAIN_SRC_DIR" -type f -name "App.java" | head -n 1)
+if [[ -n "$APP_JAVA_PATH" ]]; then
+    SCRUTINAUT_APP_PATH="${APP_JAVA_PATH%/*}/ScrutinautApp.java"
+    cp "$APP_JAVA_PATH" "${APP_JAVA_PATH}.bak.$timestamp"
+    mv "$APP_JAVA_PATH" "$SCRUTINAUT_APP_PATH"
+    # Update class name in the file
+    sed -i 's/\bclass App\b/class ScrutinautApp/' "$SCRUTINAUT_APP_PATH"
+    # Optionally, ensure the package line is correct (replace with your canonical package if needed)
+    PACKAGE_LINE=$(grep '^package ' "$SCRUTINAUT_APP_PATH" | head -n 1)
+    if [[ -z "$PACKAGE_LINE" ]]; then
+        sed -i "1i package com.gmail.xuoxod.scrutinaut;\n" "$SCRUTINAUT_APP_PATH"
     fi
-    cp "$CUSTOM_APPTEST_PATH" "$TARGET_APPTEST_PATH"
-    echo -e "${GREEN}ScrutinautAppTest.java upgraded.${NC}"
+    printf "\n\t\t[UPGRADE] Renamed App.java to ScrutinautApp.java and updated class name in:\n\t\t%s\n\n" "$SCRUTINAUT_APP_PATH"
+else
+    printf "\n\t\t[INFO] No App.java found to rename in main source tree.\n\n"
 fi
 
-# --- Upgrade UrlInterrogatorTest.java (optional) ---
-if [[ -f "$CUSTOM_URLTEST_PATH" ]]; then
-    if [[ -f "$TARGET_URLTEST_PATH" ]]; then
-        cp "$TARGET_URLTEST_PATH" "${TARGET_URLTEST_PATH}.bak.$timestamp"
-        echo -e "${YELLOW}Backed up UrlInterrogatorTest.java to ${TARGET_URLTEST_PATH}.bak.$timestamp${NC}"
+# --- Ensure test root exists ---
+mkdir -p "$SRC_TEST_ROOT"
+
+# --- Upgrade custom test files ---
+for CUSTOM_FILE in "${CUSTOM_TEST_FILES[@]}"; do
+    if [[ -f "$PROJECT_ROOT_DIR/$CUSTOM_FILE" ]]; then
+        # Extract class name from file (assumes class name matches file name minus 'custom-' prefix)
+        CLASS_FILE="$(echo "$CUSTOM_FILE" | sed 's/^custom-//')"
+        # Find the correct target path for this class file
+        TARGET_PATH=$(find "$SRC_TEST_ROOT" -type d -print0 | xargs -0 -I{} find {} -maxdepth 1 -type f -name "$CLASS_FILE" 2>/dev/null | head -n 1)
+        # If not found, use the main package directory (from your setup)
+        if [[ -z "$TARGET_PATH" ]]; then
+            # Try to infer package from custom file
+            PACKAGE_LINE=$(grep '^package ' "$PROJECT_ROOT_DIR/$CUSTOM_FILE" | head -n 1 | awk '{print $2}' | tr -d ';')
+            PACKAGE_PATH="${PACKAGE_LINE//.//}"
+            TARGET_DIR="$SRC_TEST_ROOT/$PACKAGE_PATH"
+            mkdir -p "$TARGET_DIR"
+            TARGET_PATH="$TARGET_DIR/$CLASS_FILE"
+        fi
+        # Backup if exists
+        if [[ -f "$TARGET_PATH" ]]; then
+            cp "$TARGET_PATH" "${TARGET_PATH}.bak.$timestamp"
+            echo -e "${YELLOW}Backed up $CLASS_FILE to ${TARGET_PATH}.bak.$timestamp${NC}"
+        fi
+        cp "$PROJECT_ROOT_DIR/$CUSTOM_FILE" "$TARGET_PATH"
+        echo -e "${GREEN}$CLASS_FILE upgraded.${NC}"
+    else
+        echo -e "${YELLOW}Custom test file $CUSTOM_FILE not found. Skipping.${NC}"
     fi
-    cp "$CUSTOM_URLTEST_PATH" "$TARGET_URLTEST_PATH"
-    echo -e "${GREEN}UrlInterrogatorTest.java upgraded.${NC}"
-fi
+done
 
-# --- Remove Maven archetype's default AppTest.java if present ---
-DEFAULT_APPTEST_PATH="${SRC_TEST_PATH}/AppTest.java"
-if [[ -f "$DEFAULT_APPTEST_PATH" ]]; then
-    rm "$DEFAULT_APPTEST_PATH"
-    echo -e "${YELLOW}Removed Maven archetype's default AppTest.java (JUnit 3 style).${NC}"
-fi
+# --- Remove all Maven archetype's default AppTest.java files (JUnit 3 style) ---
+echo -e "${CYAN}Searching for and removing all AppTest.java files generated by Maven archetype...${NC}"
+find "$SRC_TEST_ROOT" -type f -name "AppTest.java" -print -exec rm -f {} \; \
+    -exec echo -e "${YELLOW}Removed: {}${NC}" \;
 
 # --- Show diff for pom.xml if backup exists ---
 if [[ -f "${TARGET_POM_PATH}.bak.$timestamp" ]]; then
@@ -96,5 +122,36 @@ fi
 echo -e "${GREEN}Upgrade complete!${NC}"
 echo -e "${CYAN}Upgraded:${NC}"
 echo -e "  - pom.xml"
-[[ -f "$CUSTOM_APPTEST_PATH" ]] && echo -e "  - ScrutinautAppTest.java"
-[[ -f "$CUSTOM_URLTEST_PATH" ]] && echo -e "  - UrlInterrogatorTest.java"
+# --- Upgrade custom test files ---
+for CUSTOM_FILE in "${CUSTOM_TEST_FILES[@]}"; do
+    if [[ -f "$PROJECT_ROOT_DIR/$CUSTOM_FILE" ]]; then
+        CLASS_FILE="$(echo "$CUSTOM_FILE" | sed 's/^custom-//')"
+        # Find the correct target path for this class file
+        TARGET_PATH=$(find "$SRC_TEST_ROOT" -type d -print0 | xargs -0 -I{} find {} -maxdepth 1 -type f -name "$CLASS_FILE" 2>/dev/null | head -n 1)
+        if [[ -z "$TARGET_PATH" ]]; then
+            PACKAGE_LINE=$(grep '^package ' "$PROJECT_ROOT_DIR/$CUSTOM_FILE" | head -n 1 | awk '{print $2}' | tr -d ';')
+            PACKAGE_PATH="${PACKAGE_LINE//.//}"
+            TARGET_DIR="$SRC_TEST_ROOT/$PACKAGE_PATH"
+            mkdir -p "$TARGET_DIR"
+            TARGET_PATH="$TARGET_DIR/$CLASS_FILE"
+        fi
+        printf "\n\t\t[UPGRADE] Copying %s to:\n\t\t%s\n\n" "$CUSTOM_FILE" "$TARGET_PATH"
+        # Backup if exists
+        if [[ -f "$TARGET_PATH" ]]; then
+            cp "$TARGET_PATH" "${TARGET_PATH}.bak.$timestamp"
+            printf "\n\t\t[BACKUP] Backed up %s to:\n\t\t%s.bak.%s\n\n" "$CLASS_FILE" "$TARGET_PATH" "$timestamp"
+        fi
+        cp "$PROJECT_ROOT_DIR/$CUSTOM_FILE" "$TARGET_PATH"
+        printf "\n\t\t[UPGRADE] %s upgraded at:\n\t\t%s\n\n" "$CLASS_FILE" "$TARGET_PATH"
+    else
+        printf "\n\t\t[SKIP] Custom test file %s not found. Skipping.\n\n" "$CUSTOM_FILE"
+    fi
+done
+
+# --- Remove all Maven archetype's default AppTest.java files (JUnit 3 style) ---
+echo -e "${CYAN}Searching for and removing all AppTest.java files generated by Maven archetype...${NC}"
+find "$SRC_TEST_ROOT" -type f -name "AppTest.java" -print | while read -r found; do
+    printf "\n\t\t[REMOVE] Found AppTest.java at:\n\t\t%s\n\n" "$found"
+    rm -f "$found"
+    printf "\n\t\t[REMOVE] Removed:\n\t\t%s\n\n" "$found"
+done

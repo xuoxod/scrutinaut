@@ -5,7 +5,7 @@ set -euo pipefail
 
 PROJECT_ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JAVA_FRONTEND_DIR_NAME="java_frontend"
-SRC_TEST_PATH="${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/src/test/java/com/gmail/xuoxod/scrutinaut/core"
+SRC_TEST_PATH="${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}/src/test/java/com/gmail/xuoxod/scrutinaut"
 CUSTOM_POM_PATH="${PROJECT_ROOT_DIR}/custom-pom.xml"
 CUSTOM_APPTEST_PATH="${PROJECT_ROOT_DIR}/custom-ScrutinautAppTest.java"
 CUSTOM_URLTEST_PATH="${PROJECT_ROOT_DIR}/custom-UrlInterrogatorTest.java"
@@ -38,6 +38,9 @@ if [[ -f "$TARGET_POM_PATH" ]]; then
 fi
 cp "$CUSTOM_POM_PATH" "$TARGET_POM_PATH"
 echo -e "${GREEN}pom.xml upgraded.${NC}"
+
+# --- Ensure test directory exists before copying test files ---
+mkdir -p "$SRC_TEST_PATH"
 
 # --- Upgrade ScrutinautAppTest.java ---
 if [[ -f "$CUSTOM_APPTEST_PATH" ]]; then

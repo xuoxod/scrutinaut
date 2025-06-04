@@ -66,6 +66,20 @@ ensure_dirs() {
     done
 }
 
+prompt_delete_dir() {
+    local dir="$1"
+    if [ -d "$dir" ]; then
+        read -p "Directory '$dir' exists. Delete and recreate? [y/N]: " resp
+        if [[ "$resp" =~ ^[Yy]$ ]]; then
+            rm -rf "$dir"
+            echo -e "${YELLOW}Deleted $dir${NC}"
+        else
+            echo -e "${RED}Aborted setup due to existing $dir${NC}"
+            exit 1
+        fi
+    fi
+}
+
 write_rust_scaffold() {
     if [ ! -d "${PROJECT_ROOT_DIR}/${RUST_BACKEND_DIR_NAME}" ]; then
         cargo new --lib "${PROJECT_ROOT_DIR}/${RUST_BACKEND_DIR_NAME}"
@@ -73,6 +87,13 @@ write_rust_scaffold() {
         touch "${PROJECT_ROOT_DIR}/${RUST_BACKEND_DIR_NAME}/src/core/mod.rs"
         touch "${PROJECT_ROOT_DIR}/${RUST_BACKEND_DIR_NAME}/src/core/url_interrogator.rs"
         echo -e "${GREEN}Rust backend scaffolded.${NC}"
+    fi
+}
+
+write_java_scaffold() {
+    if [ ! -d "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}" ]; then
+        mvn archetype:generate -DgroupId="${JAVA_GROUP_ID}" -DartifactId="${JAVA_FRONTEND_DIR_NAME}" -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+        echo -e "${GREEN}Java frontend scaffolded.${NC}"
     fi
 }
 
@@ -121,7 +142,7 @@ write_inspect_script() {
 #!/bin/bash
 set -euo pipefail
 
-: "${PROJECT_ROOT_DIR:=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+: : "${PROJECT_ROOT_DIR:=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 : "${JAVA_FRONTEND_DIR_NAME:=java_frontend}"
 : "${RUST_BACKEND_DIR_NAME:=rust_backend}"
 
@@ -149,27 +170,6 @@ ensure_gitignore() {
     if ! grep -q "^logs/$" "$gi" 2>/dev/null; then
         echo "logs/" >> "$gi"
         echo -e "${GREEN}Ensured logs/ in .gitignore${NC}"
-    fi
-}
-
-prompt_delete_dir() {
-    local dir="$1"
-    if [ -d "$dir" ]; then
-        read -p "Directory '$dir' exists. Delete and recreate? [y/N]: " resp
-        if [[ "$resp" =~ ^[Yy]$ ]]; then
-            rm -rf "$dir"
-            echo -e "${YELLOW}Deleted $dir${NC}"
-        else
-            echo -e "${RED}Aborted setup due to existing $dir${NC}"
-            exit 1
-        fi
-    fi
-}
-
-write_java_scaffold() {
-    if [ ! -d "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}" ]; then
-        mvn archetype:generate -DgroupId="${JAVA_GROUP_ID}" -DartifactId="${JAVA_FRONTEND_DIR_NAME}" -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
-        echo -e "${GREEN}Java frontend scaffolded.${NC}"
     fi
 }
 
@@ -210,20 +210,19 @@ main() {
 
     branch_safety
     ensure_dirs
+
+    # Prompt before deleting dirs, then scaffold
+    prompt_delete_dir "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}"
+    prompt_delete_dir "${PROJECT_ROOT_DIR}/${RUST_BACKEND_DIR_NAME}"
+
     write_rust_scaffold
+    write_java_scaffold
     write_system_check
     write_error_logger
     write_platform_check
     write_helpers
     write_inspect_script
     ensure_gitignore
-
-    prompt_delete_dir "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}"
-    write_java_scaffold
-
-    prompt_delete_dir "${PROJECT_ROOT_DIR}/${RUST_BACKEND_DIR_NAME}"
-
-    self_test
 
     echo -e "${GREEN}Setup completed successfully!${NC}"
     echo -e "${CYAN}Next steps:${NC}"
@@ -234,10 +233,14 @@ main() {
     echo -e "  5. Enjoy Scrutinaut! 🚀"
 }
 
-if [[ -f "${PROJECT_ROOT_DIR}/upgrade-java-pom.sh" ]]; then
+main "$@"
+
+# --- Only run upgrade after scaffolding ---
+if [[ -d "${PROJECT_ROOT_DIR}/${JAVA_FRONTEND_DIR_NAME}" && -f "${PROJECT_ROOT_DIR}/upgrade-java-pom.sh" ]]; then
     bash "${PROJECT_ROOT_DIR}/upgrade-java-pom.sh"
-else
+elif [[ ! -f "${PROJECT_ROOT_DIR}/upgrade-java-pom.sh" ]]; then
     echo -e "${YELLOW}No upgrade script found. Skipping Java pom upgrade.${NC}"
 fi
 
-main "$@"
+# --- Now run self-test, after upgrade ---
+self_test

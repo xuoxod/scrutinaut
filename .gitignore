@@ -31,3 +31,4 @@ scripts/utils/*.log
 *.swp
 *.swo
 *~logs/
+logs/

@@ -62,6 +62,13 @@ if [[ -f "$CUSTOM_URLTEST_PATH" ]]; then
     echo -e "${GREEN}UrlInterrogatorTest.java upgraded.${NC}"
 fi
 
+# --- Remove Maven archetype's default AppTest.java if present ---
+DEFAULT_APPTEST_PATH="${SRC_TEST_PATH}/AppTest.java"
+if [[ -f "$DEFAULT_APPTEST_PATH" ]]; then
+    rm "$DEFAULT_APPTEST_PATH"
+    echo -e "${YELLOW}Removed Maven archetype's default AppTest.java (JUnit 3 style).${NC}"
+fi
+
 # --- Show diff for pom.xml if backup exists ---
 if [[ -f "${TARGET_POM_PATH}.bak.$timestamp" ]]; then
     if command -v colordiff &>/dev/null; then

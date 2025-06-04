@@ -1,4 +1,4 @@
-package com.scrutinaut;
+package com.gmail.xuoxod.scrutinaut;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

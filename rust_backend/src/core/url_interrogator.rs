@@ -1,6 +1,6 @@
 use reqwest::blocking::get;
 use scraper::{Html, Selector};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::collections::HashMap;
 
 pub fn interrogate_url(url: &str) -> Result<Value, String> {
@@ -53,6 +53,19 @@ pub fn interrogate_url(url: &str) -> Result<Value, String> {
     result.insert("links", json!(links));
     result.insert("meta_description", json!(meta_desc));
     result.insert("images", json!(images));
+
+    // OpenGraph meta tags
+    let mut opengraph: HashMap<String, String> = HashMap::new();
+    let og_selector = Selector::parse("meta[property^=\"og:\"]").unwrap();
+    for el in document.select(&og_selector) {
+        if let Some(property) = el.value().attr("property") {
+            if let Some(content) = el.value().attr("content") {
+                opengraph.insert(property.to_string(), content.to_string());
+            }
+        }
+    }
+
+    result.insert("opengraph", json!(opengraph));
 
     Ok(json!(result))
 }

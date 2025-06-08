@@ -16,7 +16,7 @@ It’s designed for lazy, modern developers who want to get straight to coding, 
 
 - **One-command setup:** `./setup.sh` builds everything for you.
 - **Atomic upgrades:** `./upgrade-java-pom.sh` upgrades your Java build and tests in one go.
-- **Java + Rust:** Best of both worlds, wired up with JNI.
+- **Java + Rust:** Best of both worlds, wired up with CLI integration.
 - **TDD by default:** Test scaffolding included.
 - **Pretty, nerdy CLI output:** Color, tables, and more.
 - **Extensible:** Add your own helpers and utilities in `scripts/helpers/` and `scripts/utils/`.
@@ -52,6 +52,7 @@ This branch is dedicated to advanced setup, automation, and CLI experience impro
 - Rust 1.70+ (`rustc`, `cargo`)
 - Maven 3.6+
 - (Optional) VS Code, tree, figlet, lolcat, toilet
+- (For some tests) Python 3 (`python3`)
 
 Run a full system check anytime:
 
@@ -61,28 +62,64 @@ Run a full system check anytime:
 
 ---
 
-## 📦 Upgrade Workflow
+## 📦 Build & Distribution
 
-Scrutinaut uses the **one job principle** for atomic, robust upgrades:
+**To build everything for end-users:**
 
-- **Project scaffolding:**  
-  Run `./setup.sh` to generate all directories, scripts, and default code.
-- **Java build & test upgrade:**  
-  Run `./upgrade-java-pom.sh` to:
-  - Overwrite `java_frontend/pom.xml` with your custom Maven build (latest JUnit, fat jar support, etc.)
-  - Overwrite `ScrutinautAppTest.java` and other test files with versions compatible with your upgraded dependencies
-  - Optionally upgrade other Java files as needed
-  - Back up originals before overwriting
-  - Show a colorized diff (if `colordiff` is available)
-  - Validate the new pom.xml as XML (if `xmllint` is available)
+1. **Build the Rust backend:**
 
-**Custom upgrade assets:**  
-Place your custom files in the project root:
+    ```sh
+    cd rust_backend
+    cargo build --release
+    cd ..
+    ```
 
-- `custom-pom.xml`
-- `custom-ScrutinautAppTest.java`
-- `custom-UrlInterrogatorTest.java`
-- (add more as needed)
+2. **Build the Java frontend and package the Rust binary:**
+
+    ```sh
+    cd java_frontend
+    mvn clean package
+    ```
+
+    This will:
+    - Build a fat JAR (`scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar`)
+    - Copy the Rust binary (`url_scraper_cli`) into the `target/` directory
+    - Create a distributable zip (`scrutinaut-app-1.0-SNAPSHOT-dist.zip`) with both files
+
+3. **Distribute the contents of `java_frontend/target/`** (or the zip) to end-users.
+
+**End-user usage:**
+
+```sh
+unzip scrutinaut-app-1.0-SNAPSHOT-dist.zip
+cd target
+java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape https://www.rust-lang.org/
+```
+
+---
+
+## 🧪 Running Tests
+
+- **Standard tests:**  
+
+  ```sh
+  mvn test
+  ```
+
+- **To run a specific test class:**  
+
+  ```sh
+  mvn -Dtest=com.gmail.xuoxod.scrutinaut.ScrutinautAppTest test
+  ```
+
+- **NetworkUtilsTest requires a local HTTP server.**  
+  Before running this test, start a local server in the project root (or where your test HTML file is located):
+
+  ```sh
+  python3 -m http.server 8080
+  ```
+
+  Then run your tests as usual.
 
 ---
 
@@ -106,7 +143,18 @@ scrutinaut/
   │   └── utils/
   │       └── check-system.sh
   ├── java_frontend/
+  │   ├── pom.xml
+  │   ├── src/
+  │   │   ├── main/
+  │   │   └── test/
+  │   └── target/
+  │       ├── scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar
+  │       ├── url_scraper_cli
+  │       └── scrutinaut-app-1.0-SNAPSHOT-dist.zip
   └── rust_backend/
+      ├── Cargo.toml
+      ├── src/
+      └── target/
 ```
 
 ---

@@ -29,5 +29,5 @@ fn main() {
         }
     }
 
-    println!("{}", serde_json::to_string_pretty(&session_data).unwrap());
+    println!("{}", serde_json::to_string(&session_data).unwrap());
 }

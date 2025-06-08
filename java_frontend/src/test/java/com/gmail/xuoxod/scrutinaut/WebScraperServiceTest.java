@@ -98,4 +98,5 @@ class WebScraperServiceTest {
         assertNotNull(links);
         assertTrue(links.size() > 50); // Wikipedia pages have many links
     }
+
 }

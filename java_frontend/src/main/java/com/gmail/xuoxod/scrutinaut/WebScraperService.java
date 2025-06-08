@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.*;
 public class WebScraperService {
 
     private static final String[] COMMON_PATHS = {
+            "./url_scraper_cli", // Same directory as the JAR
+            "url_scraper_cli", // Fallback
             "../rust_backend/target/debug/url_scraper_cli",
             "../../rust_backend/target/debug/url_scraper_cli",
             "rust_backend/target/debug/url_scraper_cli"
@@ -50,7 +52,9 @@ public class WebScraperService {
 
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(output.toString(), Map.class);
+            return mapper.readValue(output.toString(),
+                    new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                    });
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new RuntimeException("Rust CLI failed: " + output.toString().trim(), e);
         }

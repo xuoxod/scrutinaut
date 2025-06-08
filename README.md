@@ -20,6 +20,8 @@ It’s designed for lazy, modern developers who want to get straight to coding, 
 - **TDD by default:** Test scaffolding included.
 - **Pretty, nerdy CLI output:** Color, tables, and more.
 - **Extensible:** Add your own helpers and utilities in `scripts/helpers/` and `scripts/utils/`.
+- **Cross-platform:** Windows batch launcher included.
+- **Configurable:** Use a `.env` file for custom environment variables.
 
 ---
 
@@ -88,13 +90,37 @@ Run a full system check anytime:
 
 3. **Distribute the contents of `java_frontend/target/`** (or the zip) to end-users.
 
-**End-user usage:**
+---
+
+## 🖥️ End-User Usage
+
+**On Linux/macOS:**
 
 ```sh
 unzip scrutinaut-app-1.0-SNAPSHOT-dist.zip
 cd target
 java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape https://www.rust-lang.org/
 ```
+
+**On Windows:**
+
+- Use the batch launcher:
+  ```
+  java_frontend\launch-scrutinaut.bat scrape https://www.rust-lang.org/
+  ```
+  (Or double-click `launch-scrutinaut.bat` and enter your arguments.)
+
+---
+
+## ⚙️ Configuration
+
+- Copy `.env.example` to `.env` in the project root to customize environment variables.
+- Example:
+  ```dotenv
+  # .env
+  SCRUTINAUT_RUST_CLI=./url_scraper_cli
+  JAVA_OPTS=-Xmx512m
+  ```
 
 ---
 
@@ -127,6 +153,7 @@ java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape https://w
 
 ```plaintext
 scrutinaut/
+  ├── .env.example
   ├── setup.sh
   ├── upgrade-java-pom.sh
   ├── custom-pom.xml
@@ -144,6 +171,7 @@ scrutinaut/
   │       └── check-system.sh
   ├── java_frontend/
   │   ├── pom.xml
+  │   ├── launch-scrutinaut.bat
   │   ├── src/
   │   │   ├── main/
   │   │   └── test/

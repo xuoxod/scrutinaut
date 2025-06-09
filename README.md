@@ -88,13 +88,48 @@ Run a full system check anytime:
 
 3. **Distribute the contents of `java_frontend/target/`** (or the zip) to end-users.
 
-**End-user usage:**
+
+## 🚀 End-User Usage
+
+After building, run from `java_frontend/target/`:
 
 ```sh
-unzip scrutinaut-app-1.0-SNAPSHOT-dist.zip
-cd target
-java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape https://www.rust-lang.org/
+java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape <url1> [<url2> ...]
 ```
+
+**Examples:**
+
+| Command Example | Description |
+|-----------------|-------------|
+| `java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape https://www.rust-lang.org/` | Scrape a single URL |
+| `java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape https://site1.com https://site2.com` | Scrape multiple URLs |
+| `java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape --file urls.txt` | Scrape URLs from a file (one per line) |
+| `java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape --style=enhanced https://www.rust-lang.org/` | Use enhanced output style |
+| `java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar scrape --style=regular --file urls.txt` | Regular style, URLs from file |
+
+**Output Style Options:**
+
+- `--style=raw`      (Compact JSON, single line)
+- `--style=json`     (Indented JSON, default)
+- `--style=regular`  (Pretty print, color, vertical)
+- `--style=enhanced` (Pretty print, color, wide/horizontal)
+
+**Other commands:**
+
+- Show version:
+
+  ```sh
+  java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar version
+  ```
+
+- Show help:  
+
+  ```sh
+  java -jar scrutinaut-app-1.0-SNAPSHOT-jar-with-dependencies.jar --help
+  ```
+
+> **Tip:** Always use a full URL (with `http://` or `https://`).  
+> Example: `https://www.google.com` (not just `www.google.com`).
 
 ---
 

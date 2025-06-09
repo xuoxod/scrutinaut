@@ -2,7 +2,7 @@ package com.gmail.xuoxod.scrutinaut;
 
 import java.io.*;
 import java.util.*;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class WebScraperService {
 

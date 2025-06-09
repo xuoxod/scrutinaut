@@ -9,6 +9,8 @@ pub fn interrogate_url(url: &str) -> Result<Value, String> {
         .text()
         .map_err(|e| format!("Failed to read response: {e}"))?;
 
+    // eprintln!("Fetched HTML body:\n{}", &body);
+
     let document = Html::parse_document(&body);
 
     // Title
@@ -64,6 +66,8 @@ pub fn interrogate_url(url: &str) -> Result<Value, String> {
             }
         }
     }
+
+    // eprintln!("Extracted OpenGraph: {:?}", opengraph);
 
     result.insert("opengraph", json!(opengraph));
 
